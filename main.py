@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib
 
 train_file = 'train.csv'
 test_file = 'test.csv'
@@ -58,10 +59,30 @@ def fix_ordinal(ord_train, ord_test):
     return ord_train, ord_test
 
 
+def fix_nom_hex(nom_train, nom_test):
+    files = [nom_train, nom_test]
+    columns = ['nom_5', 'nom_6', 'nom_7', 'nom_8', 'nom_9']
+    for file in files:
+        for column in columns:
+            file[column] = file[column].apply(lambda x: int(x, 16))
+            file[column] = (file[column]-file[column].min())/(file[column].max()-file[column].min())
+    return nom_train, nom_test
+
+
+def fix_ord_letters(ord_train, ord_test):
+
+    return ord_train, ord_test
+
+
 train_df, test_df = load_files()
 bin_fixed_train, bin_fixed_test = fix_binaries(train_df, test_df)
 nom_1_fixed_train, nom_1_fixed_test = fix_nom_one_hot(bin_fixed_train, bin_fixed_test)
 ord_1_fixed_train, ord_1_fixed_test = fix_ordinal(nom_1_fixed_train, nom_1_fixed_test)
+nom_fixed_train, nom_fixed_test = fix_nom_hex(ord_1_fixed_train, ord_1_fixed_test)
+
+nom_fixed_train['ord_3'].value_counts().plot(kind='bar')
+
+ord_fixed_train, ord_fixed_test = fix_ord_letters(nom_fixed_train, nom_fixed_test)
 unique_values = check_uniques(bin_fixed_train)
 
 print(unique_values['ord_2'])
