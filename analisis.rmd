@@ -1,0 +1,161 @@
+# Competencia Kaggle Análisis de Datos
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(MASS)
+library(e1071)
+library(ISLR)
+library(neuralnet)
+library(gsubfn)
+library(data.table)
+```
+
+
+## Cargar dataset
+```{r}
+dataset <- read.csv("/home/michael/Documentos/Seminario_de_IO_1/Competencia_Kaggle/train_processed.csv", sep = ",")
+```
+
+
+```{r}
+info_df <- as.data.frame(dataset[c('ord_3', 'ord_4', 'ord_5', 'day', 'month', 'target')])
+```
+
+
+#Grafica info de "ord_3"
+#Definitivamente ordenada alfabéticamente
+```{r}
+relation_table <- as.data.frame(table(info_df$target, info_df$ord_3))
+percentage_df <- group_by(relation_table, Var2) %>% mutate(percent = Freq/sum(Freq))
+percentage_df <- percentage_df[!(percentage_df$Var1==0), ]
+percentage_df <- percentage_df[c('Var2', 'percent')]
+plot(percentage_df$Var2, percentage_df$percent)
+```
+
+
+#Grafica info de "ord_4"
+#Definitivamente ordenada alfabéticamente
+```{r}
+relation_table <- as.data.frame(table(info_df$target, info_df$ord_4))
+percentage_df <- group_by(relation_table, Var2) %>% mutate(percent = Freq/sum(Freq))
+percentage_df <- percentage_df[!(percentage_df$Var1==0), ]
+percentage_df <- percentage_df[c('Var2', 'percent')]
+plot(percentage_df$Var2, percentage_df$percent)
+```
+
+
+#Grafica info de "ord_5" ya arreglada
+#Definitivamente ordenada alfabéticamente
+```{r}
+relation_table <- as.data.frame(table(info_df$target, info_df$ord_5))
+percentage_df <- group_by(relation_table, Var2) %>% mutate(percent = Freq/sum(Freq))
+percentage_df <- percentage_df[!(percentage_df$Var1==0), ]
+percentage_df <- percentage_df[c('Var2', 'percent')]
+percentage_df <- percentage_df[order(percentage_df$Var2), ]
+plot(percentage_df$Var2, percentage_df$percent)
+```
+
+
+#Grafica info de "day"
+#Parece que esta información nos servirá justo como está
+```{r}
+relation_table <- as.data.frame(table(info_df$target, info_df$day))
+percentage_df <- group_by(relation_table, Var2) %>% mutate(percent = Freq/sum(Freq))
+percentage_df <- percentage_df[!(percentage_df$Var1==0), ]
+percentage_df <- percentage_df[c('Var2', 'percent')]
+plot(percentage_df$Var2, percentage_df$percent)
+```
+
+
+#Grafica info de "month"
+#Tiene un comportamiento un poco raro, verificaré si con Q en vez del mes se ve mejor
+#Una vez arreglado a ser Quarter en Python se observa mejor un patrón
+```{r}
+relation_table <- as.data.frame(table(info_df$target, info_df$month))
+percentage_df <- group_by(relation_table, Var2) %>% mutate(percent = Freq/sum(Freq))
+percentage_df <- percentage_df[!(percentage_df$Var1==0), ]
+percentage_df <- percentage_df[c('Var2', 'percent')]
+plot(percentage_df$Var2, percentage_df$percent)
+```
+
+
+#Grafica info de "ord_5"
+#Este no me dio información útil aún
+```{r}
+relation_table <- as.data.frame(table(info_df$target, info_df$ord_5))
+percentage_df <- group_by(relation_table, Var2) %>% mutate(percent = Freq/sum(Freq))
+percentage_df <- percentage_df[!(percentage_df$Var1==0), ]
+percentage_df <- percentage_df[c('Var2', 'percent')]
+plot(percentage_df$Var2, percentage_df$percent)
+```
+
+
+#Separa ord_5 por letra
+```{r}
+ord_5_split <- transpose(as.data.frame(strsplit(info_df$ord_5, '')))
+new_info_df <- cbind(info_df, ord_5_split)
+```
+
+
+#Grafica info de "ord_5 letra 1"
+#Definitivamente ordenada alfabéticamente pero con las mayúsculas primero
+```{r}
+Sys.setlocale("LC_COLLATE","C")
+relation_table <- as.data.frame(table(new_info_df$target, new_info_df$V1))
+percentage_df <- group_by(relation_table, Var2) %>% mutate(percent = Freq/sum(Freq))
+percentage_df <- percentage_df[!(percentage_df$Var1==0), ]
+percentage_df <- percentage_df[c('Var2', 'percent')]
+percentage_df <- percentage_df[order(percentage_df$Var2), ]
+plot(percentage_df$Var2, percentage_df$percent)
+```
+
+
+#Grafica info de "ord_5 letra 2"
+#Ordenada alfabéticamente o no parece dar solamente ruido, no tiene orden
+```{r}
+Sys.setlocale("LC_COLLATE","C")
+relation_table <- as.data.frame(table(new_info_df$target, new_info_df$V2))
+percentage_df <- group_by(relation_table, Var2) %>% mutate(percent = Freq/sum(Freq))
+percentage_df <- percentage_df[!(percentage_df$Var1==0), ]
+percentage_df <- percentage_df[c('Var2', 'percent')]
+percentage_df <- percentage_df[order(percentage_df$Var2), ]
+plot(percentage_df$Var2, percentage_df$percent)
+```
+
+
+```{r}
+corrplot(cor(dataset),
+         method = "number",
+         type = "upper")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

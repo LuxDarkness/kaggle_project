@@ -1,5 +1,5 @@
 import pandas as pd
-import matplotlib
+from sklearn.preprocessing import OrdinalEncoder
 
 train_file = 'train.csv'
 test_file = 'test.csv'
@@ -58,7 +58,17 @@ def fix_nom_hex(nom_file):
 
 
 def fix_ord_letters(ord_file):
+    columns = ['ord_3', 'ord_4', 'ord_5']
+    ord_file['ord_5'] = ord_file['ord_5'].astype(str).str[0]
+    ord_enc = OrdinalEncoder()
+    for column in columns:
+        ord_file[column] = ord_enc.fit_transform(ord_file[[column]])
+    return ord_file
 
+
+def fix_month(ord_file):
+    ord_file['month'] = pd.to_datetime(ord_file['month'].values, format='%m').astype('period[Q]')
+    ord_file['month'] = ord_file['month'].astype(str).str[5]
     return ord_file
 
 
@@ -67,7 +77,8 @@ def preprocess_file(file):
     processed = fix_nom_one_hot(processed)
     processed = fix_ordinal(processed)
     processed = fix_nom_hex(processed)
-    # processed = fix_ord_letters(processed)
+    processed = fix_ord_letters(processed)
+    processed = fix_month(processed)
     return processed
 
 
@@ -76,12 +87,12 @@ def write_file(df, name):
 
 
 train_df = load_file(train_file)
-test_df = load_file(test_file)
+# test_df = load_file(test_file)
 processed_train = preprocess_file(train_df)
-processed_test = preprocess_file(test_df)
+# processed_test = preprocess_file(test_df)
 
-write_file(test_df, 'test_processed.csv')
+write_file(processed_train, 'train_processed.csv')
 
 unique_values = check_uniques(processed_train)
 
-print(unique_values['ord_2'])
+print(unique_values['ord_4'])
