@@ -72,6 +72,13 @@ def fix_month(ord_file):
     return ord_file
 
 
+def order_df(df):
+    cols = list(df.columns.values)
+    cols.pop(cols.index('target'))
+    df = df[cols + ['target']]
+    return df
+
+
 def preprocess_file(file):
     processed = fix_binaries(file)
     processed = fix_nom_one_hot(processed)
@@ -79,6 +86,7 @@ def preprocess_file(file):
     processed = fix_nom_hex(processed)
     processed = fix_ord_letters(processed)
     processed = fix_month(processed)
+    processed = order_df(processed)
     return processed
 
 
@@ -92,7 +100,3 @@ processed_train = preprocess_file(train_df)
 # processed_test = preprocess_file(test_df)
 
 write_file(processed_train, 'train_processed.csv')
-
-unique_values = check_uniques(processed_train)
-
-print(unique_values['ord_4'])

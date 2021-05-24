@@ -125,37 +125,67 @@ plot(percentage_df$Var2, percentage_df$percent)
 ```
 
 
+#Dataframe de solo binarios
 ```{r}
-corrplot(cor(dataset),
+bin_df <- as.data.frame(dataset[c('bin_0', 'bin_1', 'bin_2', 'bin_3', 'bin_4', 'target')])
+```
+
+
+#Parece que los binarios por si solos no tienen ninguna correlación fuerte con el target 
+```{r}
+corrplot(cor(bin_df),
          method = "number",
          type = "upper")
 ```
 
 
+#Dataframe de solo nominales del 5 al 9
+```{r}
+nom_p1_df <- as.data.frame(dataset[c('nom_5', 'nom_6', 'nom_7', 'nom_8', 'nom_9', 'target')])
+```
 
 
+#Parece que los nominales graficados por si solos no tienen ninguna correlación fuerte con el target 
+```{r}
+corrplot(cor(nom_p1_df),
+         method = "number",
+         type = "upper")
+```
 
 
+#Dataframe de solo ordinales
+```{r}
+ord_df <- as.data.frame(dataset[c('ord_0', 'ord_1', 'ord_2', 'ord_3', 'ord_4', 'ord_5', 'target')])
+```
 
 
+#Los ordinales son los que mayor efecto parecen tener al momento
+```{r}
+corrplot(cor(ord_df),
+         method = "number",
+         type = "upper")
+```
 
 
+#Dataframe de solo ordinales
+```{r}
+ord_df <- as.data.frame(dataset[c('ord_0', 'ord_1', 'ord_2', 'ord_3', 'ord_4', 'ord_5', 'target')])
+```
 
 
+#Los ordinales son los que mayor efecto parecen tener al momento
+```{r}
+corrplot(cor(ord_df),
+         method = "number",
+         type = "upper")
+```
 
 
+```{r}
+corrplot(cor(dataset),
+         method = "pie",
+         type = "upper")
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Todos estos intentos me dicen que posiblemente la mejor alternativa sea utilizar todas las variables con distintos modelos para ver que resultados logramos obtener
 
