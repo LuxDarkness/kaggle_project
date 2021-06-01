@@ -74,7 +74,10 @@ def fix_month(ord_file):
 
 def order_df(df):
     cols = list(df.columns.values)
-    cols.pop(cols.index('target'))
+    try:
+        cols.pop(cols.index('target'))
+    except ValueError:
+        return df
     df = df[cols + ['target']]
     return df
 
@@ -95,8 +98,8 @@ def write_file(df, name):
 
 
 train_df = load_file(train_file)
-# test_df = load_file(test_file)
+test_df = load_file(test_file)
 processed_train = preprocess_file(train_df)
-# processed_test = preprocess_file(test_df)
+processed_test = preprocess_file(test_df)
 
 write_file(processed_train, 'train_processed.csv')
