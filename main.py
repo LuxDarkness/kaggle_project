@@ -1,5 +1,10 @@
+from auxiliar_functions import PlotTraining
+import keras
 import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.model_selection import train_test_split
+import tensorflow as tf
+from tensorflow.keras import layers
 
 train_file = 'train.csv'
 test_file = 'test.csv'
@@ -98,8 +103,31 @@ def write_file(df, name):
 
 
 train_df = load_file(train_file)
-test_df = load_file(test_file)
+real_info_df = load_file(test_file)
 processed_train = preprocess_file(train_df)
-processed_test = preprocess_file(test_df)
+processed_test = preprocess_file(real_info_df)
 
-write_file(processed_train, 'train_processed.csv')
+training_df, testing_df = train_test_split(train_df, test_size=0.3, train_size=0.7, random_state=5)
+training_target = training_df.pop('target')
+testing_target = testing_df.pop('target')
+
+training_dataset = tf.data.Dataset.from_tensor_slices((training_df.values, training_target.values))
+testing_dataset = tf.data.Dataset.from_tensor_slices((testing_df, testing_target))
+# write_file(processed_train, 'train_processed.csv')
+
+model = keras.Sequential([
+    layers.Dense(24, activation='relu'),
+    layers.Dense(10, activation='relu'),
+    layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(),
+    loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+    metrics=['accuracy']
+)
+
+plot_training = PlotTraining(sample_rate=10, zoom=16)
+
+history = model.fit(training_dataset, epochs=5, validation_data=testing_dataset, validation_steps=1,
+                    callbacks=[plot_training])
