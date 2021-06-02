@@ -112,7 +112,7 @@ training_target = training_df.pop('target')
 testing_target = testing_df.pop('target')
 
 training_dataset = tf.data.Dataset.from_tensor_slices((training_df.values, training_target.values))
-testing_dataset = tf.data.Dataset.from_tensor_slices((testing_df, testing_target))
+testing_dataset = tf.data.Dataset.from_tensor_slices((testing_df.values, testing_target.values))
 # write_file(processed_train, 'train_processed.csv')
 
 model = keras.Sequential([
