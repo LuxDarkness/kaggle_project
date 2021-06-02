@@ -116,23 +116,22 @@ testing_np = np.asarray(testing_df.values).astype('float32')
 training_target = np.asarray(training_target.values).astype('float32')
 testing_target = np.asarray(testing_target.values).astype('float32')
 
-training_dataset = tf.data.Dataset.from_tensor_slices((training_np, training_target))
-testing_dataset = tf.data.Dataset.from_tensor_slices((testing_np, testing_target))
 # write_file(processed_train, 'train_processed.csv')
 
 model = keras.Sequential([
-    layers.Dense(24, activation='relu'),
+    layers.Dense(44, activation='relu', input_shape=(44, 1)),
+    layers.Dense(20, activation='relu'),
     layers.Dense(10, activation='relu'),
     layers.Dense(1, activation='sigmoid')
 ])
 
 model.compile(
     optimizer='Adam',
-    loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+    loss=tf.keras.losses.BinaryCrossentropy(),
     metrics=['accuracy']
 )
 
 plot_training = PlotTraining(sample_rate=10, zoom=16)
 
-history = model.fit(training_dataset, epochs=5, validation_data=testing_dataset, validation_steps=1,
-                    callbacks=[plot_training])
+model.fit(x=training_np, y=training_target, epochs=5, batch_size=1000, validation_data=(testing_np, testing_target),
+          callbacks=[plot_training])
