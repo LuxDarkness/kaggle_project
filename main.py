@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
+import numpy as np
 from tensorflow.keras import layers
 
 train_file = 'train.csv'
@@ -107,12 +108,16 @@ real_info_df = load_file(test_file)
 processed_train = preprocess_file(train_df)
 processed_test = preprocess_file(real_info_df)
 
-training_df, testing_df = train_test_split(train_df, test_size=0.3, train_size=0.7, random_state=5)
+training_df, testing_df = train_test_split(processed_train, test_size=0.3, train_size=0.7, random_state=5)
 training_target = training_df.pop('target')
 testing_target = testing_df.pop('target')
+training_np = np.asarray(training_df.values).astype('float32')
+testing_np = np.asarray(testing_df.values).astype('float32')
+training_target = np.asarray(training_target.values).astype('float32')
+testing_target = np.asarray(testing_target.values).astype('float32')
 
-training_dataset = tf.data.Dataset.from_tensor_slices((training_df.values, training_target.values))
-testing_dataset = tf.data.Dataset.from_tensor_slices((testing_df.values, testing_target.values))
+training_dataset = tf.data.Dataset.from_tensor_slices((training_np, training_target))
+testing_dataset = tf.data.Dataset.from_tensor_slices((testing_np, testing_target))
 # write_file(processed_train, 'train_processed.csv')
 
 model = keras.Sequential([
@@ -122,7 +127,7 @@ model = keras.Sequential([
 ])
 
 model.compile(
-    optimizer=tf.keras.optimizers.Adam(),
+    optimizer='Adam',
     loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
     metrics=['accuracy']
 )
