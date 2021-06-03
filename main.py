@@ -1,11 +1,12 @@
-from auxiliar_functions import PlotTraining
 import keras
 import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegressionCV
 import tensorflow as tf
 import numpy as np
-from tensorflow.keras import layers
+import math
+from tensorflow.keras import layers, regularizers
 
 train_file = 'train.csv'
 test_file = 'test.csv'
@@ -103,35 +104,54 @@ def write_file(df, name):
     df.to_csv(files_directory+name)
 
 
-train_df = load_file(train_file)
-real_info_df = load_file(test_file)
-processed_train = preprocess_file(train_df)
-processed_test = preprocess_file(real_info_df)
+def turn_to_np_array(df):
+    target = df.pop('target')
+    df.pop('id')
+    df.pop('bin_0')
+    np_array = np.asarray(df.values).astype('float32')
+    np_target = np.asarray(target.values).astype('float32')
+    return np_array, np_target
 
-training_df, testing_df = train_test_split(processed_train, test_size=0.3, train_size=0.7, random_state=5)
-training_target = training_df.pop('target')
-testing_target = testing_df.pop('target')
-training_np = np.asarray(training_df.values).astype('float32')
-testing_np = np.asarray(testing_df.values).astype('float32')
-training_target = np.asarray(training_target.values).astype('float32')
-testing_target = np.asarray(testing_target.values).astype('float32')
+
+def lr_decay(epoch):
+    return 0.01 * math.pow(0.666, epoch)
+
+
+train_df = load_file(train_file)
+# real_info_df = load_file(test_file)
+processed_train = preprocess_file(train_df)
+# processed_real = preprocess_file(real_info_df)
+
+sk_training_data, sk_training_target = turn_to_np_array(processed_train)
+
+# training_df, testing_df = train_test_split(processed_train, test_size=0.3, train_size=0.7, random_state=2)
+# training_np, training_target = turn_to_np_array(training_df)
+# testing_np, testing_target = turn_to_np_array(testing_df)
 
 # write_file(processed_train, 'train_processed.csv')
 
-model = keras.Sequential([
-    layers.Dense(44, activation='relu', input_shape=(44, 1)),
-    layers.Dense(20, activation='relu'),
-    layers.Dense(10, activation='relu'),
-    layers.Dense(1, activation='sigmoid')
-])
+# regularizers.L1L2(
+#     l1=0.2, l2=0.2
+# )
+#
+# model = keras.Sequential([
+#     layers.Dense(42, activation='sigmoid', input_shape=(42, 1)),
+#     layers.Dense(20, activation='relu'),
+#     layers.Dense(10, activation='relu'),
+#     layers.Dense(1, activation='sigmoid', kernel_regularizer='l1_l2')
+# ])
+#
+# model.compile(
+#     optimizer='Adam',
+#     loss=tf.keras.losses.BinaryCrossentropy(),
+#     metrics=['accuracy']
+# )
 
-model.compile(
-    optimizer='Adam',
-    loss=tf.keras.losses.BinaryCrossentropy(),
-    metrics=['accuracy']
-)
+# lr_decay_callback = tf.keras.callbacks.LearningRateScheduler(lr_decay, verbose=True)
+#
+# model.fit(x=training_np, y=training_target, epochs=20, batch_size=1000, validation_data=(testing_np, testing_target),
+#           callbacks=[lr_decay_callback])
 
-plot_training = PlotTraining(sample_rate=10, zoom=16)
-
-model.fit(x=training_np, y=training_target, epochs=5, batch_size=1000, validation_data=(testing_np, testing_target),
-          callbacks=[plot_training])
+lr_model = LogisticRegressionCV(solver='saga', max_iter=1000, penalty='elasticnet', l1_ratios=[0.3, 0.4], n_jobs=-1)
+lr_model.fit(sk_training_data, sk_training_target)
+print('Process complete!')
