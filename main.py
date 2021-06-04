@@ -119,15 +119,27 @@ def lr_decay(epoch):
 
 
 train_df = load_file(train_file)
-# real_info_df = load_file(test_file)
+real_info_df = load_file(test_file)
 processed_train = preprocess_file(train_df)
-# processed_real = preprocess_file(real_info_df)
+processed_real = preprocess_file(real_info_df)
+processed_train.pop('id')
+processed_real.pop('id')
+train_target = processed_train.pop('target')
 
-# sk_training_data, sk_training_target = turn_to_np_array(processed_train)
+act_cols = [i for i in processed_train.columns]
+dummies = pd.get_dummies(processed_train, columns=act_cols, drop_first=True, sparse=True)
+train_sparse = dummies.iloc[:processed_train.shape[0], :]
+real_sparse = dummies.iloc[processed_train.shape[0]:, :]
+train_sparse = train_sparse.fillna(0)
 
-training_df, testing_df = train_test_split(processed_train, test_size=0.3, train_size=0.7, random_state=2)
-training_np, training_target = turn_to_np_array(training_df)
-testing_np, testing_target = turn_to_np_array(testing_df)
+train_sparse = train_sparse.sparse.to_coo().tocsr()
+real_sparse = real_sparse.sparse.to_coo().tocsr()
+train_target = train_target.values
+
+training_df, testing_df, training_target, testing_target = train_test_split(train_sparse, train_target, test_size=0.3,
+                                                                            train_size=0.7, random_state=2)
+# training_np, training_target = turn_to_np_array(training_df)
+# testing_np, testing_target = turn_to_np_array(testing_df)
 
 # write_file(processed_train, 'train_processed.csv')
 
@@ -154,7 +166,7 @@ testing_np, testing_target = turn_to_np_array(testing_df)
 #           callbacks=[lr_decay_callback])
 
 lr_model = LogisticRegressionCV(solver='saga', max_iter=1000, penalty='elasticnet', l1_ratios=[0.3, 0.4], n_jobs=-1)
-lr_model.fit(training_np, training_target)
-prediction = lr_model.predict(testing_np)[:, 1]
+lr_model.fit(training_df, training_target)
+prediction = lr_model.predict(testing_df)[:, 1]
 acc = roc_auc_score(testing_target, prediction)
 print('Score: ', acc)
