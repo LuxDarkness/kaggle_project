@@ -1,12 +1,13 @@
-import keras
+# import keras
 import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegressionCV
-import tensorflow as tf
+from sklearn.metrics import roc_auc_score
+# import tensorflow as tf
 import numpy as np
 import math
-from tensorflow.keras import layers, regularizers
+# from tensorflow.keras import layers, regularizers
 
 train_file = 'train.csv'
 test_file = 'test.csv'
@@ -122,11 +123,11 @@ train_df = load_file(train_file)
 processed_train = preprocess_file(train_df)
 # processed_real = preprocess_file(real_info_df)
 
-sk_training_data, sk_training_target = turn_to_np_array(processed_train)
+# sk_training_data, sk_training_target = turn_to_np_array(processed_train)
 
-# training_df, testing_df = train_test_split(processed_train, test_size=0.3, train_size=0.7, random_state=2)
-# training_np, training_target = turn_to_np_array(training_df)
-# testing_np, testing_target = turn_to_np_array(testing_df)
+training_df, testing_df = train_test_split(processed_train, test_size=0.3, train_size=0.7, random_state=2)
+training_np, training_target = turn_to_np_array(training_df)
+testing_np, testing_target = turn_to_np_array(testing_df)
 
 # write_file(processed_train, 'train_processed.csv')
 
@@ -153,5 +154,7 @@ sk_training_data, sk_training_target = turn_to_np_array(processed_train)
 #           callbacks=[lr_decay_callback])
 
 lr_model = LogisticRegressionCV(solver='saga', max_iter=1000, penalty='elasticnet', l1_ratios=[0.3, 0.4], n_jobs=-1)
-lr_model.fit(sk_training_data, sk_training_target)
-print('Process complete!')
+lr_model.fit(training_np, training_target)
+prediction = lr_model.predict(testing_np)[:, 1]
+acc = roc_auc_score(testing_target, prediction)
+print('Score: ', acc)
